@@ -11,6 +11,7 @@
   "author": "Rohit T P",
   "license": "MIT",
   "devDependencies": {
+    "@types/three": "^0.172.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.11.0",
@@ -22,5 +23,8 @@
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.15.2",
     "webpack-html-plugin": "^0.1.1"
+  },
+  "dependencies": {
+    "three": "^0.172.0"
   }
 }
