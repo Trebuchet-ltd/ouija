@@ -12,3 +12,37 @@ export const letterPositions = {
     'W': { x: 0.12, z: 0.0 }, 'X': { x: 0.17, z: 0.0 }, 'Y': { x: 0.2, z: 0.01 },
     'Z': { x: 0.23, z: 0.02 }
 };
+
+export function getLetterPosition(rowIndex: number, letterIndex: number) {
+    const totalDegrees = 45; // Total arc in degrees
+    const radius = 0.685; // Radius of the circle
+    const centerY = -0.65; // X coordinate of the center of the circle
+    const centerX = 0; // Y coordinate of the center of the circle (since it's centered horizontally)
+
+    // Calculate the angle in degrees for the given letter index
+    const degreesPerLetter = totalDegrees / (12 + rowIndex); // Total degrees divided by the number of intervals
+    const letterDegree = degreesPerLetter * (letterIndex - 6); // Degree offset for this letter index
+
+    // Convert the angle from degrees to radians
+    const letterRadian = (letterDegree + 90) * (Math.PI / 180); // Converting degrees to radians
+
+    // Calculate the x and y coordinates based on the circle formula
+    const x = radius * Math.cos(letterRadian);
+    const y = radius * Math.sin(letterRadian);
+
+    // Adjust by the circle's center coordinates
+    const adjustedX = centerX + x;
+    const adjustedY = centerY + y + rowIndex * 0.05
+
+    return { x: adjustedX, y: adjustedY };
+}
+
+export function letterToPosition(letter: string) {
+    console.log(letter)
+    letter = letter.toUpperCase();
+    if(letter >= "N") {
+        return getLetterPosition(0, letter.charCodeAt(0) - "N".charCodeAt(0));
+    } else {
+        return getLetterPosition(1, letter.charCodeAt(0) - "A".charCodeAt(0));
+    }
+}

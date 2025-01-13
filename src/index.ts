@@ -1,32 +1,27 @@
-import { VRButton } from 'three/examples/jsm/webxr/VRButton';
 import * as THREE from 'three';
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { letterPositions } from './utils/utils';
+import {VRButton} from 'three/examples/jsm/webxr/VRButton';
+import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import {getLetterPosition, letterToPosition} from "./utils/utils";
+import Animator2D from "./utils/animator";
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-let coinObject; // To store the loaded coin
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 
+const coin = new Promise<THREE.Group<THREE.Object3DEventMap>>((resolve, reject) => {
+    new GLTFLoader().load('models/coin.glb', (gltf) => resolve(gltf.scene), undefined, reject);
+});
 
-camera.position.set(0, 1, 5);
-
-const word = "Rohit".toUpperCase();
-let currentIndex = 0;
-const constantY = 0.1; // Y remains constant
+const animator = new Animator2D();
 
 function setupScene() {
     new GLTFLoader().load('models/board.glb', function (board) {
-        board.scene.rotation.y = Math.PI;
         scene.add(board.scene);
     }, undefined, console.error);
 
-    new GLTFLoader().load('models/coin.glb', function (gltf) {
-        coinObject = gltf.scene;
-        coinObject.position.set(letterPositions[word[0]].x, constantY, letterPositions[word[0]].z);
-        coinObject.scale.set(0.5, 0.5, 0.5);
+    coin.then((coinObject) => {
+        coinObject.scale.set(0.5, 1, 0.5);
         scene.add(coinObject);
-    }, undefined, function (error) {
-        console.error("Failed to load the coin model:", error);
     });
 
     const hLight = new THREE.HemisphereLight(0xffffff, 0x444444);
@@ -45,45 +40,28 @@ function setup() {
     renderer.setAnimationLoop(animate);
 }
 
+function nextQuestion() {
+    const question = prompt("Enter a question");
+    if(question) {
+        animator.setText(question);
+    }
+}
+
 function animate() {
-    if (!renderer.xr.isPresenting) return;
+    if (!renderer.xr.isPresenting || animator.isDone()) return;
 
     renderer.render(scene, camera);
-}
+    const newPosition = animator.step();
+    coin.then((it) => it.position.set(newPosition.x, 0, newPosition.y));
 
-function moveCoinToNextLetter() {
-    if (currentIndex >= word.length - 1) {
-        console.log("Reached the end of the word.");
-        return;
-    }
-
-    currentIndex++;
-    const nextLetter = word[currentIndex];
-    const targetX = letterPositions[nextLetter].x;
-    const targetZ = letterPositions[nextLetter].z;
-
-    if (coinObject) {
-        moveCoinSmoothly(coinObject, targetX, constantY, targetZ);
-    } else {
-        console.error("Coin object is not available.");
+    if(animator.isDone()) {
+        nextQuestion();
     }
 }
 
-function moveCoinSmoothly(coin, targetX, targetY, targetZ) {
-    const dx = (targetX - coin.position.x) * 0.1;
-    const dz = (targetZ - coin.position.z) * 0.1;
-
-    if (Math.abs(dx) > 0.001 || Math.abs(dz) > 0.001) {
-        coin.position.x += dx;
-        coin.position.z += dz;
-        requestAnimationFrame(() => moveCoinSmoothly(coin, targetX, targetY, targetZ));
-    } else {
-        coin.position.set(targetX, targetY, targetZ);
-        if (currentIndex < word.length - 1) {
-            setTimeout(moveCoinToNextLetter, 2000);  // Wait 5 seconds before moving to the next letter
-        }
-    }
-}
 
 setup();
-setTimeout(moveCoinToNextLetter, 2000);  // Start moving after 5 seconds to allow setup to complete
+nextQuestion();
+
+
+
