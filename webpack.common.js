@@ -60,7 +60,7 @@ module.exports = {
                     chunks: [page],
                     title: "template",
                     scriptLoading: "defer",
-                    publicPath: "/"
+                    publicPath: "."
                 })
         ),
         new MiniCssExtractPlugin({filename: "styles.[hash].css"}),

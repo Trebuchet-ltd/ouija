@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import {VRButton} from 'three/examples/jsm/webxr/VRButton';
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
-import {getLetterPosition, letterToPosition} from "./utils/utils";
 import Animator2D from "./utils/animator";
 
 const scene = new THREE.Scene();
